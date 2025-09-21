@@ -1,15 +1,12 @@
 #include "transport_catalogue.h"
 #include <ostream>
 
-namespace transport_catalogue{
-	class TransportCatalogue;
-}
+namespace transport_catalogue {
+	namespace readers {
 
-namespace transport_catalogue{
-	namespace readers{
 		void ParseAndPrintStat(const TransportCatalogue& transport_catalogue,
-		                       std::string_view request,
-		                       std::ostream& output) {
+							   std::string_view request,
+							   std::ostream& output) {
 			std::string request_type = std::string(request.substr(0, request.find(' ')));
 			std::string request_name = std::string(request.substr(request.find(' ') + 1));
 
@@ -31,19 +28,19 @@ namespace transport_catalogue{
 				}
 			}
 			else if (request_type == "Bus") {
-				if (transport_catalogue.BusExists(request_name)) {
-					output << "Bus " << request_name << ": "
-						<< transport_catalogue.GetStops(request_name)
-						<< " stops on route, "
-						<< transport_catalogue.GetUniqueStops(request_name)
-						<< " unique stops, "
-						<< transport_catalogue.GetRouteLength(request_name)
-						<< " route length\n";
+				auto bus_info = transport_catalogue.GetBusInfo(request_name);
+
+				if (!bus_info) {
+					output << "Bus " << request_name << ": not found\n";
 				}
 				else {
-					output << "Bus " << request_name << ": not found\n";
+					output << "Bus " << bus_info->name << ": "
+						   << bus_info->stop_count << " stops on route, "
+						   << bus_info->unique_stop_count << " unique stops, "
+						   << bus_info->route_length << " route length\n";
 				}
 			}
 		}
-	}
-}
+
+	} 
+} 

@@ -106,7 +106,7 @@ namespace transport_catalogue{
 			}
 		}
 
-		void InputReader::ApplyCommands([[maybe_unused]] transport_catalogue::TransportCatalogue& catalogue) const {
+		void InputReader::ApplyCommands(transport_catalogue::TransportCatalogue& catalogue) const {
 			std::vector<CommandDescription> bus_commands;
 			bus_commands.reserve(commands_.size());
 
