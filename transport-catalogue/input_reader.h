@@ -5,36 +5,35 @@
 #include "transport_catalogue.h"
 
 namespace transport_catalogue{
-	namespace readers{
-		struct CommandDescription {
-			// Определяет, задана ли команда (поле command непустое)
-			explicit operator bool() const {
-				return !command.empty();
-			}
+    namespace readers{
+        struct CommandDescription {
+            explicit operator bool() const {
+                return !command.empty();
+            }
+            bool operator!() const {
+                return !operator bool();
+            }
 
-			bool operator!() const {
-				return !operator bool();
-			}
+            std::string command;      
+            std::string id;          
+            std::string description; 
+            std::vector<std::pair<std::string, int>> distances; 
+        };
 
-			std::string command; // Название команды
-			std::string id; // id маршрута или остановки
-			std::string description; // Параметры команды
-		};
+        class InputReader {
+        public:
+            /**
+             * Парсит строку в структуру CommandDescription и сохраняет результат в commands_
+             */
+            void ParseLine(std::string_view line);
 
-		class InputReader {
-		public:
-			/**
-			 * Парсит строку в структуру CommandDescription и сохраняет результат в commands_
-			 */
-			void ParseLine(std::string_view line);
+            /**
+             * Наполняет данными транспортный справочник, используя команды из commands_
+             */
+            void ApplyCommands(transport_catalogue::TransportCatalogue& catalogue) const;
 
-			/**
-			 * Наполняет данными транспортный справочник, используя команды из commands_
-			 */
-			void ApplyCommands(transport_catalogue::TransportCatalogue& catalogue) const;
-
-		private:
-			std::vector<CommandDescription> commands_;
-		};
-	}
+        private:
+            std::vector<CommandDescription> commands_;
+        };
+    }
 }

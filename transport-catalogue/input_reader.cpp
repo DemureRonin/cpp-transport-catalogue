@@ -93,12 +93,55 @@ namespace transport_catalogue{
 				return {};
 			}
 
-			return {
-				std::string(line.substr(0, space_pos)),
-				std::string(line.substr(not_space, colon_pos - not_space)),
-				std::string(line.substr(colon_pos + 1))
-			};
+			CommandDescription cmd;
+			cmd.command = std::string(line.substr(0, space_pos));
+			cmd.id = std::string(line.substr(not_space, colon_pos - not_space));
+
+			std::string_view rest = line.substr(colon_pos + 1);
+			if (cmd.command == "Stop") {
+				auto comma1 = rest.find(',');
+				if (comma1 == rest.npos) {
+					return {};
+				}
+				auto comma2 = rest.find(',', comma1 + 1);
+
+				if (comma2 == rest.npos) {
+					cmd.description = std::string(rest);
+					return cmd;
+				}
+
+				cmd.description = std::string(rest.substr(0, comma2));
+				std::string_view dists = Trim(rest.substr(comma2 + 1));
+
+				while (!dists.empty()) {
+					auto m_pos = dists.find("m to ");
+					if (m_pos == dists.npos) break;
+
+					int dist = std::stoi(std::string(dists.substr(0, m_pos)));
+					dists.remove_prefix(m_pos + 4);
+
+					auto comma = dists.find(',');
+					std::string stop_name;
+					if (comma == dists.npos) {
+						stop_name = std::string(Trim(dists));
+						dists = {};
+					}
+					else {
+						stop_name = std::string(Trim(dists.substr(0, comma)));
+						dists.remove_prefix(comma + 1);
+					}
+
+					cmd.distances.emplace_back(std::move(stop_name), dist);
+					dists = Trim(dists);
+				}
+			}
+			else {
+				cmd.description = std::string(rest);
+			}
+
+			return cmd;
 		}
+
 
 		void InputReader::ParseLine(std::string_view line) {
 			if (auto command_description = ParseCommandDescription(line)) {
@@ -107,20 +150,29 @@ namespace transport_catalogue{
 		}
 
 		void InputReader::ApplyCommands(transport_catalogue::TransportCatalogue& catalogue) const {
-			std::vector<CommandDescription> bus_commands;
-			bus_commands.reserve(commands_.size());
+			std::vector<const CommandDescription*> bus_commands;
+			std::vector<const CommandDescription*> stop_distance_commands;
 
 			for (const auto& command : commands_) {
 				if (command.command == "Stop") {
 					catalogue.AddStop(command.id, ParseCoordinates(command.description));
+					if (!command.distances.empty()) {
+						stop_distance_commands.push_back(&command);
+					}
 				}
 				else if (command.command == "Bus") {
-					bus_commands.push_back(command);
+					bus_commands.push_back(&command);
 				}
 			}
 
-			for (const auto& bus_command : bus_commands) {
-				catalogue.AddBus(bus_command.id, ParseRoute(bus_command.description));
+			for (const auto* command : stop_distance_commands) {
+				for (const auto& [other_stop, dist] : command->distances) {
+					catalogue.SetDistance(command->id, other_stop, dist);
+				}
+			}
+
+			for (const auto* bus_command : bus_commands) {
+				catalogue.AddBus(bus_command->id, ParseRoute(bus_command->description));
 			}
 		}
 	}
