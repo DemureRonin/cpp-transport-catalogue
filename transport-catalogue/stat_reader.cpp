@@ -1,6 +1,6 @@
 #include "stat_reader.h"
-#include "input_reader.h" // чтобы использовать Trim
-#include "input_reader.h" // чтобы использовать Trim
+#include "input_reader.h" 
+
 #include <ostream>
 
 std::string_view Trim(std::string_view string) {
