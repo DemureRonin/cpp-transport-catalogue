@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <variant>
 #include <utility>
 #include "transport_catalogue.h"
 #include "json.h"
@@ -9,15 +10,20 @@
 
 namespace transport_catalogue::readers {
 
-    struct JsonCommand {
-        std::string command;
+    struct StopCommand {
         std::string id;
-        std::vector<std::string> stops;
-        std::vector<std::pair<std::string, int>> distances;
         double latitude = 0.0;
         double longitude = 0.0;
+        std::vector<std::pair<std::string, int>> distances;
+    };
+
+    struct BusCommand {
+        std::string id;
+        std::vector<std::string> stops;
         bool is_roundtrip = false;
     };
+
+    using Command = std::variant<StopCommand, BusCommand>;
 
     class JsonReader {
     public:
@@ -31,12 +37,13 @@ namespace transport_catalogue::readers {
 
     private:
         TransportCatalogue &catalogue_;
-        std::vector<JsonCommand> commands_;
+        std::vector<Command> commands_;
         std::vector<json::Node> stat_requests_;
         renderer::RenderSettings map_settings_;
 
         void ParseBaseRequests(const json::Node &base_requests_node);
         void ParseRenderSettings(const json::Node &node);
+        [[nodiscard]] static std::string NodeToColor(const json::Node &node);
     };
 
 }
