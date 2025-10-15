@@ -102,20 +102,20 @@ namespace transport_catalogue::renderer {
 
         void AddBusLabel(svg::Document &doc, std::string_view bus_name, svg::Point pos, size_t color_index) const;
 
-        [[nodiscard]] std::unordered_set<const  domain::Stop *> CollectUniqueStops() const;
+        [[nodiscard]] std::unordered_set<const domain::Stop *> CollectUniqueStops() const;
 
-        [[nodiscard]] SphereProjector CreateProjector(const std::unordered_set<const  domain::Stop *> &stops) const;
+        [[nodiscard]] SphereProjector CreateProjector(const std::unordered_set<const domain::Stop *> &stops) const;
 
         void DrawBusLines(svg::Document &doc, const SphereProjector &projector) const;
 
         void DrawBusLabels(svg::Document &doc, const SphereProjector &projector) const;
 
         void DrawStopCircles(svg::Document &doc,
-                             const std::unordered_set<const  domain::Stop *> &unique_stops,
+                             const std::unordered_set<const domain::Stop *> &unique_stops,
                              const SphereProjector &projector) const;
 
         void DrawStopLabels(svg::Document &doc,
-                            const std::unordered_set<const  domain::Stop *> &unique_stops,
+                            const std::unordered_set<const domain::Stop *> &unique_stops,
                             const SphereProjector &projector) const;
     };
 }

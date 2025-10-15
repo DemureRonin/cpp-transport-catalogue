@@ -23,7 +23,7 @@ namespace transport_catalogue::readers {
 
     void JsonReader::Load(std::istream &input) {
         const json::Document doc = json::Load(input);
-        const auto &root = doc.GetRoot().AsMap();
+        const auto &root = doc.GetRoot().AsDict();
 
         if (root.contains("base_requests")) {
             ParseBaseRequests(root.at("base_requests"));
@@ -37,7 +37,6 @@ namespace transport_catalogue::readers {
     }
 
     void JsonReader::ApplyCommands() const {
-
         for (const auto &cmd: commands_) {
             if (std::holds_alternative<StopCommand>(cmd)) {
                 const auto &stop = std::get<StopCommand>(cmd);
@@ -67,7 +66,6 @@ namespace transport_catalogue::readers {
         }
     }
 
-
     const std::vector<json::Node> &JsonReader::GetStatRequests() const {
         return stat_requests_;
     }
@@ -78,7 +76,7 @@ namespace transport_catalogue::readers {
 
     void JsonReader::ParseBaseRequests(const json::Node &base_requests_node) {
         for (const auto &item: base_requests_node.AsArray()) {
-            const auto &m = item.AsMap();
+            const auto &m = item.AsDict();
             const std::string type = m.at("type").AsString();
 
             if (type == "Stop") {
@@ -86,12 +84,12 @@ namespace transport_catalogue::readers {
                 cmd.id = m.at("name").AsString();
                 cmd.latitude = m.at("latitude").AsDouble();
                 cmd.longitude = m.at("longitude").AsDouble();
-                if (m.contains("road_distances")) {
-                    for (const auto &[stop_name, dist_node]: m.at("road_distances").AsMap()) {
+                if (m.find("road_distances") != m.end()) {
+                    for (const auto &[stop_name, dist_node]: m.at("road_distances").AsDict()) {
                         cmd.distances.emplace_back(stop_name, dist_node.AsInt());
                     }
                 }
-                commands_.push_back(std::move(cmd));
+                commands_.emplace_back(std::move(cmd));
             } else if (type == "Bus") {
                 BusCommand cmd;
                 cmd.id = m.at("name").AsString();
@@ -100,13 +98,13 @@ namespace transport_catalogue::readers {
                     cmd.stops.push_back(stop_node.AsString());
                 }
                 cmd.is_roundtrip = m.at("is_roundtrip").AsBool();
-                commands_.push_back(std::move(cmd));
+                commands_.emplace_back(std::move(cmd));
             }
         }
     }
 
     void JsonReader::ParseRenderSettings(const json::Node &node) {
-        const auto &m = node.AsMap();
+        const auto &m = node.AsDict();
 
         map_settings_.width = m.at("width").AsDouble();
         map_settings_.height = m.at("height").AsDouble();

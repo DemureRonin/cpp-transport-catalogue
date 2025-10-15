@@ -9,12 +9,11 @@
 #include "map_renderer.h"
 
 namespace transport_catalogue::readers {
-
     struct StopCommand {
         std::string id;
         double latitude = 0.0;
         double longitude = 0.0;
-        std::vector<std::pair<std::string, int>> distances;
+        std::vector<std::pair<std::string, int> > distances;
     };
 
     struct BusCommand {
@@ -30,9 +29,11 @@ namespace transport_catalogue::readers {
         explicit JsonReader(TransportCatalogue &catalogue);
 
         void Load(std::istream &input);
+
         void ApplyCommands() const;
 
         [[nodiscard]] const std::vector<json::Node> &GetStatRequests() const;
+
         [[nodiscard]] const renderer::RenderSettings &GetMapSettings() const;
 
     private:
@@ -42,8 +43,9 @@ namespace transport_catalogue::readers {
         renderer::RenderSettings map_settings_;
 
         void ParseBaseRequests(const json::Node &base_requests_node);
+
         void ParseRenderSettings(const json::Node &node);
+
         [[nodiscard]] static std::string NodeToColor(const json::Node &node);
     };
-
 }

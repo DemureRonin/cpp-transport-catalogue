@@ -50,6 +50,6 @@ namespace transport_catalogue {
             }
         };
 
-        std::unordered_map<std::pair<const  domain::Stop *, const  domain::Stop *>, int, StopPairHash> distances_;
+        std::unordered_map<std::pair<const domain::Stop *, const domain::Stop *>, int, StopPairHash> distances_;
     };
 }
