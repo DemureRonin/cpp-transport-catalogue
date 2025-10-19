@@ -17,20 +17,24 @@ namespace json {
             root_ = std::move(node);
             return root_;
         }
+
         Node *current = GetCurrentContainer();
+
         if (current->IsArray()) {
-            auto &arr = const_cast<Array &>(current->AsArray());
+            auto &arr = current->AsArray();
             arr.push_back(std::move(node));
             return arr.back();
         } else if (current->IsDict()) {
             if (!pending_key_) throw std::logic_error("Key must be set before Value in dict");
-            Dict &dict = const_cast<Dict &>(current->AsDict());
+            auto &dict = current->AsDict();
             auto &ref = dict[*pending_key_] = std::move(node);
             pending_key_.reset();
             return ref;
         }
+
         throw std::logic_error("invalid container type");
     }
+
 
     DictItemContext Builder::StartDict() {
         Node &node = AddNode(Node(Dict{}));
