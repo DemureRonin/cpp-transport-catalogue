@@ -1,3 +1,5 @@
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include "transport_catalogue.h"
 #include "request_handler.h"
@@ -14,5 +16,7 @@ int main() {
     handler.ApplyCommands();
 
     json::Array result = handler.ProcessRequests();
+
+
     json::Print(json::Document{json::Node(result)}, std::cout);
 }

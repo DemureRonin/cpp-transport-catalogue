@@ -31,6 +31,9 @@ namespace transport_catalogue::readers {
         if (root.contains("render_settings")) {
             ParseRenderSettings(root.at("render_settings"));
         }
+        if (root.contains("routing_settings")) {
+            ParseRoutingSettings(root.at("routing_settings"));
+        }
         if (root.contains("stat_requests")) {
             stat_requests_ = root.at("stat_requests").AsArray();
         }
@@ -72,6 +75,10 @@ namespace transport_catalogue::readers {
 
     const renderer::RenderSettings &JsonReader::GetMapSettings() const {
         return map_settings_;
+    }
+
+    const transport_router::RoutingSettings &JsonReader::GetRouteSettings() const {
+        return route_settings_;
     }
 
     void JsonReader::ParseBaseRequests(const json::Node &base_requests_node) {
@@ -127,5 +134,12 @@ namespace transport_catalogue::readers {
         for (const auto &c: m.at("color_palette").AsArray()) {
             map_settings_.color_palette.push_back(NodeToColor(c));
         }
+    }
+
+
+    void JsonReader::ParseRoutingSettings(const json::Node &node) {
+        const auto &m = node.AsDict();
+        route_settings_.bus_velocity = m.at("bus_velocity").AsDouble();
+        route_settings_.bus_wait_time = m.at("bus_wait_time").AsInt();
     }
 }

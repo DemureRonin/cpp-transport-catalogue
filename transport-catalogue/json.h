@@ -99,6 +99,7 @@ namespace json {
             return std::get<Array>(*this);
         }
 
+
         bool IsString() const {
             return std::holds_alternative<std::string>(*this);
         }

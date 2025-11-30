@@ -18,6 +18,11 @@ namespace transport_catalogue::readers {
         const auto &settings = reader_.GetMapSettings();
         const renderer::MapRenderer renderer(catalogue_, settings);
 
+        transport_router::TransportRouter router;
+        router.SetRoutingSettings(reader_.GetRouteSettings());
+        router.BuildGraph(catalogue_);
+
+
         json::Array result;
         for (const auto &req: reader_.GetStatRequests()) {
             const auto &m = req.AsDict();
@@ -66,6 +71,42 @@ namespace transport_catalogue::readers {
                         {"curvature", json::Node(info.curvature)},
                         {"stop_count", json::Node(static_cast<int>(info.stop_count))},
                         {"unique_stop_count", json::Node(static_cast<int>(info.unique_stop_count))}
+                    });
+                }
+            } else if (type == "Route") {
+                std::string from = m.at("from").AsString();
+                std::string to = m.at("to").AsString();
+
+                auto route_opt = router.BuildRoute(from, to);
+                if (!route_opt) {
+                    result.emplace_back(json::Dict{
+                        {"request_id", json::Node(id)},
+                        {"error_message", json::Node("not found")}
+                    });
+                } else {
+                    const auto &route = *route_opt;
+                    json::Array items_array;
+                    for (const auto &item: route.items) {
+                        if (item.type == transport_router::RouteItem::Type::Wait) {
+                            items_array.emplace_back(json::Dict{
+                                {"type", json::Node("Wait")},
+                                {"stop_name", json::Node(item.stop_name)},
+                                {"time", json::Node(item.time)}
+                            });
+                        } else {
+                            items_array.emplace_back(json::Dict{
+                                {"type", json::Node("Bus")},
+                                {"bus", json::Node(item.bus)},
+                                {"span_count", json::Node(item.span_count)},
+                                {"time", json::Node(item.time)}
+                            });
+                        }
+                    }
+
+                    result.emplace_back(json::Dict{
+                        {"request_id", json::Node(id)},
+                        {"total_time", json::Node(route.total_time)},
+                        {"items", json::Node(items_array)}
                     });
                 }
             }

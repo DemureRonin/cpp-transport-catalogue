@@ -5,6 +5,7 @@
 #include "json.h"
 #include "map_renderer.h"
 #include "json_reader.h"
+#include "transport_router.h"
 
 namespace transport_catalogue::readers {
     class RequestHandler {
@@ -18,6 +19,7 @@ namespace transport_catalogue::readers {
         [[nodiscard]] json::Array ProcessRequests() const;
 
     private:
+        transport_router::RoutingSettings route_settings_;
         TransportCatalogue &catalogue_;
         JsonReader reader_;
     };
